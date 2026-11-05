@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Online Banking Application REST API on AWS Lambda behind API Gateway, backed by MySQL.
+
+Parameters:
+  DatabaseUrl:
+    Type: String
+    Description: JDBC URL, e.g. jdbc:mysql://<rds-proxy-or-db-endpoint>:3306/banking
+  DatabaseSecretArn:
+    Type: String
+    Description: ARN of a Secrets Manager secret containing "username" and "password" keys.
+  SubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Private subnets that can reach the database.
+  SecurityGroupIds:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+    Description: Security groups allowed to connect to the database.
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 2048
+
+Resources:
+  BankingApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: java8.al2023
+      Handler: com.dbs.bank.lambda.StreamLambdaHandler::handleRequest
+      CodeUri: target/BankingApplication-0.0.1-SNAPSHOT-lambda.zip
+      VpcConfig:
+        SubnetIds: !Ref SubnetIds
+        SecurityGroupIds: !Ref SecurityGroupIds
+      Environment:
+        Variables:
+          SPRING_DATASOURCE_URL: !Ref DatabaseUrl
+          SPRING_DATASOURCE_USERNAME: !Sub '{{resolve:secretsmanager:${DatabaseSecretArn}:SecretString:username}}'
+          SPRING_DATASOURCE_PASSWORD: !Sub '{{resolve:secretsmanager:${DatabaseSecretArn}:SecretString:password}}'
+          SPRING_JPA_SHOW_SQL: 'false'
+      Events:
+        ProxyApi:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  ApiBaseUrl:
+    Description: Base URL of the deployed API
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/api/v1'
