@@ -1,7 +1,7 @@
 package com.dbs.bank.model;
 
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 
 

@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
