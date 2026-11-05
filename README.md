@@ -7,7 +7,11 @@ The Spring Boot REST API runs unchanged on AWS Lambda through
 API Gateway forwards every request to `com.dbs.bank.lambda.StreamLambdaHandler`,
 which dispatches it to the existing controllers under `/api/v1`.
 
-Running locally with `mvn spring-boot:run` still works as before.
+Requirements: Java 21 and Maven 3.6.3 or later (the bundled `mvnw` uses 3.9.11).
+The app uses Spring Boot 3.5, Hibernate 6 and Jakarta EE (`jakarta.*`).
+
+Running locally with `mvn spring-boot:run` still works as before. API docs are
+served by springdoc at `/swagger-ui.html` and `/v3/api-docs`.
 
 ### Build
 
@@ -34,7 +38,12 @@ example `GET <ApiBaseUrl>/branch`.
 
 ### Notes
 
-- Runtime is `java8.al2023`, so the Java 8 code base is unchanged.
+- Runtime is `java21` (Amazon Linux 2023).
+- The zip is larger than Lambda's 50 MB direct-upload limit, so deploy it
+  through S3, which `sam deploy` does automatically.
+- Hibernate 6 generates IDs from per-entity `<entity>_seq` tables instead of
+  the single `hibernate_sequence` table used before; start from a fresh
+  schema or migrate existing ID sequences.
 - Database settings come from `SPRING_DATASOURCE_*` environment variables,
   which override `application.properties`.
 - The JSP view is not served from Lambda; only the REST API is.

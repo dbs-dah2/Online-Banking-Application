@@ -25,7 +25,7 @@ Resources:
   BankingApiFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: java8.al2023
+      Runtime: java21
       Handler: com.dbs.bank.lambda.StreamLambdaHandler::handleRequest
       CodeUri: target/BankingApplication-0.0.1-SNAPSHOT-lambda.zip
       VpcConfig:
